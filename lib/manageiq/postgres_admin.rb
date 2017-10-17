@@ -2,6 +2,7 @@ require 'awesome_spawn'
 require 'pathname'
 require 'linux_admin'
 
+module ManageIQ
 RAILS_ROOT ||= Pathname.new(__dir__).join("../../../")
 
 class PostgresAdmin
@@ -267,4 +268,5 @@ class PostgresAdmin
       result['pg_is_in_recovery']
     end
   end
+end
 end

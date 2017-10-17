@@ -1,7 +1,6 @@
-require "util/postgres_admin"
 require 'pg'
 
-describe PostgresAdmin do
+describe ManageIQ::PostgresAdmin do
   context "ENV dependent" do
     after do
       ENV.delete_if { |k, _| k.start_with?("APPLIANCE") }
