@@ -1,10 +1,7 @@
 require 'awesome_spawn'
-require 'pathname'
 require 'linux_admin'
 
 module ManageIQ
-RAILS_ROOT ||= Pathname.new(__dir__).join("../../../")
-
 class PostgresAdmin
   def self.data_directory
     Pathname.new(ENV.fetch("APPLIANCE_PG_DATA"))
@@ -32,7 +29,14 @@ class PostgresAdmin
   end
 
   def self.certificate_location
-    RAILS_ROOT.join("certs")
+    rails_root.join("certs")
+  end
+
+  def self.rails_root
+    @rails_root ||= begin
+      require 'pathname'
+      Pathname.new("/var/www/miq/vmdb")
+    end
   end
 
   def self.logical_volume_name
