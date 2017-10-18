@@ -102,7 +102,7 @@ class PostgresAdmin
     # Drop subscriptions, unload extension and ensure pglogical connections are closed before proceeding
     unload_pglogical_extension(opts)
   rescue AwesomeSpawn::CommandResultError
-    $log.info("MIQ(#{name}.#{__method__}) Ignoring failure to remove pglogical before restore ...")
+    logger.info("MIQ(#{name}.#{__method__}) Ignoring failure to remove pglogical before restore ...")
   end
 
   def self.unload_pglogical_extension(opts)
@@ -129,7 +129,7 @@ class PostgresAdmin
       count = match ? match[:count].to_i : 0
       break if count.zero?
 
-      $log.info("MIQ(#{name}.#{__method__}) Waiting on #{count} pglogical connections to close...")
+      logger.info("MIQ(#{name}.#{__method__}) Waiting on #{count} pglogical connections to close...")
       sleep 5
     end
   end
@@ -219,11 +219,11 @@ class PostgresAdmin
     options = (options[:aggressive] ? GC_AGGRESSIVE_DEFAULTS : GC_DEFAULTS).merge(options)
 
     result = vacuum(options)
-    $log.info("MIQ(#{name}.#{__method__}) Output... #{result}") if result.to_s.length > 0
+    logger.info("MIQ(#{name}.#{__method__}) Output... #{result}") if result.to_s.length > 0
 
     if options[:reindex]
       result = reindex(options)
-      $log.info("MIQ(#{name}.#{__method__}) Output... #{result}") if result.to_s.length > 0
+      logger.info("MIQ(#{name}.#{__method__}) Output... #{result}") if result.to_s.length > 0
     end
   end
 
@@ -256,7 +256,7 @@ class PostgresAdmin
   end
 
   def self.runcmd_with_logging(cmd_str, opts, params = {})
-    $log.info("MIQ(#{name}.#{__method__}) Running command... #{AwesomeSpawn.build_command_line(cmd_str, params)}")
+    logger.info("MIQ(#{name}.#{__method__}) Running command... #{AwesomeSpawn.build_command_line(cmd_str, params)}")
     AwesomeSpawn.run!(cmd_str, :params => params, :env => {
                         "PGUSER"     => opts[:username],
                         "PGPASSWORD" => opts[:password]}).output
@@ -270,6 +270,17 @@ class PostgresAdmin
     pg_connection.exec("SELECT pg_catalog.pg_is_in_recovery()") do |db_result|
       result = db_result.map_types!(PG::BasicTypeMapForResults.new(pg_connection)).first
       result['pg_is_in_recovery']
+    end
+  end
+
+  class << self
+    attr_accessor :logger
+  end
+
+  def self.logger
+    @logger ||= begin
+      require 'logger'
+      $log || Logger.new(STDOUT)
     end
   end
 end
