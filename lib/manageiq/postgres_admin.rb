@@ -267,6 +267,7 @@ class PostgresAdmin
   # @param pg_connection [PG::Connection] established pg connection
   # @return [Boolean] true if database in recovery mode
   def self.database_in_recovery?(pg_connection)
+    require 'pg'
     pg_connection.exec("SELECT pg_catalog.pg_is_in_recovery()") do |db_result|
       result = db_result.map_types!(PG::BasicTypeMapForResults.new(pg_connection)).first
       result['pg_is_in_recovery']
